@@ -15,6 +15,7 @@ baseFolder =  r'C:\Users\johnj\Documents\SIG\15.goldmining\scripts\dummyData\S1B
 bucket = 'goldminehack'
 
 def asfMetadata(baseFolder):
+	""" Parses filename for generating metadata """
 	baseFile = baseFolder.split('\\')[-1].split('_')
 	baseMeta = ["mission","beanMode","productTypeRes","processingLvlClass","startDate","endDate","absOrbit","mdtID","uniqID"]
 	a = dict(zip(baseMeta,baseFile))
@@ -48,6 +49,7 @@ def prepTileSet(baseFolder):
 
 
 def makeManifest(baseFolder):
+	""" creates general manifest file for each ASF scene """
 	manifestBase = \
 	""" {"name": "projects/earthengine-legacy/assets/$assPath",
 		"tilesets": [$tilesets],
