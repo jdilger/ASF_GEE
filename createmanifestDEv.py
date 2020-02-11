@@ -15,7 +15,7 @@ bucket = 'goldminehack'
 
 def asfMetadata(baseFolder):
 	""" Parses filename for generating metadata """
-	baseFile = baseFolder.split('\\')[-1].split('_')
+	baseFile = baseFolder.split('/')[-1].split('_')
 	baseMeta = ["mission","beanMode","productTypeRes","processingLvlClass","startDate","endDate","absOrbit","mdtID","uniqID"]
 	a = dict(zip(baseMeta,baseFile))
 	startTime = parseTime(a['startDate'])
@@ -33,14 +33,14 @@ def parseTime(dateStr):
 
 def prepTileSet(baseFolder):
 	""" returns tifs in tileset template as list of stings """
-	bands = glob.glob(baseFolder+'\\*.tif')
+	bands = glob.glob(baseFolder+'/*.tif')
 	tileSets = Template("""{"id": "$iD","sources":[{"uris": ["$img"]}]}""")
 	bandsBase = Template(""" {"id":"$bandId", "tileset_id":"$tilesetId"} """)
 	tList = []
 	bList = []
 	for i in bands:
 		try:
-			i = i.split('\\')[-1]
+			i = i.split('/')[-1]
 			img = 'gs://{}/{}'.format(bucket,i)
 			iD = i.split('_')
 			if iD[-1].split('.')[0] == 'map':
@@ -72,7 +72,7 @@ def makeManifest(baseFolder):
 	tiles, bands = prepTileSet(baseFolder)
 	tiles = ','.join(tiles)
 	bands = ','.join(bands)
-	outname = baseFolder.split('\\')[-1]
+	outname = baseFolder.split('/')[-1]
 	print(outname)
 	fullManifest = Template(manifestBase).substitute(assPath='projects/ACCA-SERVIR/Goldmining/ASF/'+outname,tilesets=tiles,bands=bands,startTime=startTime,properties=properties)
 	with open('upload/'+outname+'.json','a') as something:
@@ -89,8 +89,8 @@ if __name__ == "__main__":
 		with zipfile.ZipFile(i,"r") as zip_ref:
 			zip_ref.extractall('tmp')
 		targetdir = i[:-4]
-		er = os.getcwd()+'\\tmp\\'+targetdir
+		er = os.getcwd()+'/tmp/'+targetdir
 		makeManifest(er)
-		for j in glob.glob(er+"\\*.tif"):
-			os.rename(j,"{}{}{}".format(os.getcwd(),'\\upload\\',j.split('\\')[-1]))
+		for j in glob.glob(er+"/*.tif"):
+			os.rename(j,"{}{}{}".format(os.getcwd(),'/upload/',j.split('/')[-1]))
 
