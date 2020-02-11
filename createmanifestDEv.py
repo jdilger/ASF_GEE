@@ -1,10 +1,9 @@
 # Make manifest files from ASF sar downoads
 
-# unzip>create medtadata>crate manifest>upload tifs/metadata/manfist to bucket
-# todo: unzip 
-# might be easiest to keep this in server/lunix
+# unzip>create medtadata>crate manifest>upload tifs/metadata/
 
-
+import time
+import calendar
 import glob, os
 import json
 import zipfile
@@ -19,7 +18,17 @@ def asfMetadata(baseFolder):
 	baseFile = baseFolder.split('\\')[-1].split('_')
 	baseMeta = ["mission","beanMode","productTypeRes","processingLvlClass","startDate","endDate","absOrbit","mdtID","uniqID"]
 	a = dict(zip(baseMeta,baseFile))
-	return json.dumps(a)
+	startTime = parseTime(a['startDate'])
+	return json.dumps(a), startTime
+
+def parseTime(dateStr):
+	""" parses date string from ASF naming convetion:
+		YYYMMDDTHHMMSS """
+	# Parse to time object
+	d_str = time.strptime(dateStr,"%Y%m%dT%H%M%S")
+	# Convert to seconds from epoch
+	d_ep = calendar.timegm(d_str)
+	return d_ep
 
 
 def prepTileSet(baseFolder):
@@ -54,17 +63,18 @@ def makeManifest(baseFolder):
 	""" {"name": "projects/earthengine-legacy/assets/$assPath",
 		"tilesets": [$tilesets],
 		"bands": [$bands],
+		"start_time": {"seconds": $startTime},
 	  	"properties": $properties
 	  	}"""
 	
 	
-	properties = asfMetadata(baseFolder)
+	properties, startTime = asfMetadata(baseFolder)
 	tiles, bands = prepTileSet(baseFolder)
 	tiles = ','.join(tiles)
 	bands = ','.join(bands)
 	outname = 'upload/'+baseFolder.split('\\')[-1]
 	os.makedirs(os.path.dirname(outname), exist_ok=True)
-	fullManifest = Template(manifestBase).substitute(assPath='users/TEST/manifestUpload',tilesets=tiles,bands=bands,properties=properties)
+	fullManifest = Template(manifestBase).substitute(assPath='users/TEST/manifestUpload',tilesets=tiles,bands=bands,startTime=startTime,properties=properties)
 	with open(outname+'.json','a') as something:
 		something.write(fullManifest)
 
@@ -82,4 +92,4 @@ if __name__ == "__main__":
 		makeManifest(er)
 		for j in glob.glob(er+"\\*.tif"):
 			os.rename(j,"{}{}{}".format(os.getcwd(),'\\upload\\',j.split('\\')[-1]))
-# 	# list all tifs
+
