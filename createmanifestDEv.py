@@ -72,10 +72,10 @@ def makeManifest(baseFolder):
 	tiles, bands = prepTileSet(baseFolder)
 	tiles = ','.join(tiles)
 	bands = ','.join(bands)
-	outname = 'upload/'+baseFolder.split('\\')[-1]
-	os.makedirs(os.path.dirname(outname), exist_ok=True)
-	fullManifest = Template(manifestBase).substitute(assPath='users/TEST/manifestUpload',tilesets=tiles,bands=bands,startTime=startTime,properties=properties)
-	with open(outname+'.json','a') as something:
+	outname = baseFolder.split('\\')[-1]
+	print(outname)
+	fullManifest = Template(manifestBase).substitute(assPath='projects/ACCA-SERVIR/Goldmining/ASF/'+outname,tilesets=tiles,bands=bands,startTime=startTime,properties=properties)
+	with open('upload/'+outname+'.json','a') as something:
 		something.write(fullManifest)
 
 
@@ -84,6 +84,7 @@ if __name__ == "__main__":
 	zipList = glob.glob('*.zip')
 	print(zipList)
 	print(os.getcwd())
+	os.makedirs(os.path.dirname('upload/'), exist_ok=True)
 	for i in zipList:
 		with zipfile.ZipFile(i,"r") as zip_ref:
 			zip_ref.extractall('tmp')
